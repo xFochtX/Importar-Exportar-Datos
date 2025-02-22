@@ -39,7 +39,7 @@ class ImportarExportarDatos():
           pd.DataFrame().to_excel(writer, sheet_name='EmptySheet') # Crear un archivo vacío con una hoja
 
     # Escribir el DataFrame en el archivo Excel (modo 'a' si 'rewrite' es False)
-    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='a' if rewrite else 'w') as writer:
+    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='a' if rewrite else 'w', if_sheet_exists='replace') as writer:
         df.to_excel(writer, sheet_name=sheet_name, **kwargs)
 
     # Eliminamos la hoja 'EmptySheet' creada inicialmente
