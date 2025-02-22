@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from pathlib import Path
 from openpyxl import load_workbook
-from configExportExcel import config_fecha, config_width_col, config_align_col
+from .configExportExcel import config_fecha, config_width_col, config_align_col
 
 # Clase para importar y exportar datos
 class ImportarExportarDatos():
@@ -32,10 +32,22 @@ class ImportarExportarDatos():
     """Exporta un DataFrame a una hoja específica de un archivo Excel."""
     self.carpeta.mkdir(parents=True, exist_ok=True)  # Asegurar que la carpeta existe
 
-    mode = 'w' if rewrite else 'a'  # Modo de escritura ('w' = sobrescribir, 'a' = agregar)
+    # Si 'rewrite' es True y el archivo no existe, creamos uno vacío
+    if rewrite:
+      if not self.ruta_archivo.exists():
+        with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='w') as writer:
+          pd.DataFrame().to_excel(writer, sheet_name='EmptySheet') # Crear un archivo vacío con una hoja
 
-    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode=mode) as writer:
-      df.to_excel(writer, sheet_name=sheet_name, **kwargs)
+    # Escribir el DataFrame en el archivo Excel (modo 'a' si 'rewrite' es False)
+    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='a' if rewrite else 'w') as writer:
+        df.to_excel(writer, sheet_name=sheet_name, **kwargs)
+
+    # Eliminamos la hoja 'EmptySheet' creada inicialmente
+    if rewrite:
+      book = load_workbook(self.ruta_archivo)
+      if 'EmptySheet' in book.sheetnames:
+        del book['EmptySheet']
+        book.save(self.ruta_archivo)
 
     # Aplicar configuraciones adicionales si están definidas
     if col_fecha or width_col or align_col:
@@ -50,47 +62,3 @@ class ImportarExportarDatos():
 
 
 
-
-'''
-  # Método que permite exportar datos a archivo excel
-  def exportar_excel(self, data, nombre_hoja_excel, rewrite = False, col_fecha = None, width_col = None, align_col = None, **kwargs):
-    if isinstance(data, pd.DataFrame):
-      if rewrite:
-        try:
-          # Intentar cargar el libro existente
-          book = load_workbook(self.ruta_archivo)
-          # Eliminar la hoja si ya existe
-          if self.nombre_archivo in book.sheetnames:
-            sheet = book[nombre_hoja_excel]
-            book.remove(sheet)
-          # Crear una nueva hoja con el DataFrame
-          with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='a') as writer: # Mode append
-            #writer.book = book
-            data.to_excel(writer, sheet_name=nombre_hoja_excel, **kwargs)
-            sheet = writer.sheets[nombre_hoja_excel]
-        except FileNotFoundError: # Si el archivo no existe, crear un nuevo libro
-          with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl') as writer:
-            data.to_excel(writer, sheet_name=nombre_hoja_excel, **kwargs)
-      else:
-        # Exportando el dataframe a archivo excel
-        with pd.ExcelWriter(self.ruta_archivo) as writer:
-          data.to_excel(writer, sheet_name=nombre_hoja_excel, **kwargs)
-    elif isinstance(data, dict):
-      with pd.ExcelWriter(self.ruta_archivo, engine='xlsxwriter', mode='w') as writer:
-        for sheet, df in data.items():
-          df.to_excel(writer, sheet_name=sheet, **kwargs)
-        del writer
-    else:
-      print('Los datos son de un tipo que no se puede exportar a excel')
-    # Realizando configuraciones específicas
-    if col_fecha or width_col or align_col:
-      book = load_workbook(self.ruta_archivo)
-      if col_fecha:
-        config_fecha(book, col_fecha)
-      if width_col:
-        config_width_col(book, width_col)
-      if align_col:
-        config_align_col(book, align_col)
-      book.save(self.ruta_archivo)
-
-'''
