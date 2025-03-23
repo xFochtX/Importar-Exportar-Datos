@@ -33,10 +33,9 @@ class ImportarExportarDatos():
     self.carpeta.mkdir(parents=True, exist_ok=True)  # Asegurar que la carpeta existe
 
     # Si 'rewrite' es True y el archivo no existe, creamos uno vacío
-    if rewrite:
-      if not self.ruta_archivo.exists():
-        with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='w') as writer:
-          pd.DataFrame().to_excel(writer, sheet_name='EmptySheet') # Crear un archivo vacío con una hoja
+    if rewrite and not self.ruta_archivo.exists():
+      with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='w') as writer:
+        pd.DataFrame().to_excel(writer, sheet_name='EmptySheet') # Crear un archivo vacío con una hoja
 
     # Configurando las opciones de exportación
     if rewrite:
@@ -45,8 +44,11 @@ class ImportarExportarDatos():
       options = {"mode": "w"}
 
     # Exportando excel
-    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
-      df.to_excel(writer, sheet_name=sheet_name, **kwargs)
+    if ruta_formato_plantilla: # Si hay una plantilla definida, usar exportar_con_plantilla
+      exportar_con_plantilla(df, ruta_formato_plantilla, self.ruta_archivo, sheet_name)
+    else:
+      with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
+        df.to_excel(writer, sheet_name=sheet_name, **kwargs)
 
     # Eliminamos la hoja 'EmptySheet' creada inicialmente
     if rewrite:

@@ -55,10 +55,10 @@ def copiar_formato(ws, fila_origen, fila_destino):
     if celda_origen.has_style:
       celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
 
-def exportar_con_plantilla(resumen_total, ruta_plantilla, ruta_archivo, hoja_destino):
+def exportar_con_plantilla(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja):
   # Cargar la plantilla
   wb = load_workbook(ruta_plantilla)
-  ws = wb['Plantilla']
+  ws = wb[wb.sheetnames[0]] # Obtener la única hoja de la plantilla
 
   # Obtener el nombre de la tabla
   table = ws.tables[list(ws.tables.keys())[0]]
@@ -73,7 +73,7 @@ def exportar_con_plantilla(resumen_total, ruta_plantilla, ruta_archivo, hoja_des
       cell.value = None
 
   # Insertar nuevos datos dentro de la tabla
-  for row_idx, row in enumerate(resumen_total.itertuples(index=False), start=inicio_fila):
+  for row_idx, row in enumerate(dataframe.itertuples(index=False), start=inicio_fila):
     for col_idx, value in enumerate(row, start=1):
       ws.cell(row=row_idx, column=col_idx, value=value)
 
@@ -82,8 +82,11 @@ def exportar_con_plantilla(resumen_total, ruta_plantilla, ruta_archivo, hoja_des
       copiar_formato(ws, inicio_fila, row_idx)
 
   # Actualizar la tabla para incluir las nuevas filas
-  ultima_fila = inicio_fila + len(resumen_total) - 1
+  ultima_fila = inicio_fila + len(dataframe) - 1
   table.ref = f"A1:{chr(64 + ws.max_column)}{ultima_fila}"  # Ajustar el rango de la tabla
+
+  # Obtener la única hoja de la plantilla
+  ws.title = nombre_hoja
 
   # Guardar el archivo con los nuevos datos
   wb.save(ruta_archivo)
