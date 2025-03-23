@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from pathlib import Path
 from openpyxl import load_workbook
-from .configExportExcel import config_fecha, config_width_col, config_align_col
+from .configExportExcel import exportar_con_plantilla
 
 # Clase para importar y exportar datos
 class ImportarExportarDatos():
@@ -28,7 +28,7 @@ class ImportarExportarDatos():
       pickle.dump(objeto, archivo)
 
   # Método que permite exportar datos a archivo excel
-  def exportar_excel(self, df, sheet_name, rewrite=False, col_fecha=None, width_col=None, align_col=None, **kwargs):
+  def exportar_excel(self, df, sheet_name, rewrite=False, ruta_formato_plantilla=None, **kwargs):
     """Exporta un DataFrame a una hoja específica de un archivo Excel."""
     self.carpeta.mkdir(parents=True, exist_ok=True)  # Asegurar que la carpeta existe
 
@@ -38,9 +38,15 @@ class ImportarExportarDatos():
         with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='w') as writer:
           pd.DataFrame().to_excel(writer, sheet_name='EmptySheet') # Crear un archivo vacío con una hoja
 
-    # Escribir el DataFrame en el archivo Excel (modo 'a' si 'rewrite' es False)
-    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='a' if rewrite else 'w', if_sheet_exists='replace') as writer:
-        df.to_excel(writer, sheet_name=sheet_name, **kwargs)
+    # Configurando las opciones de exportación
+    if rewrite:
+      options = {"mode": "a", "if_sheet_exists": "replace"}
+    else:
+      options = {"mode": "w"}
+
+    # Exportando excel
+    with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
+      df.to_excel(writer, sheet_name=sheet_name, **kwargs)
 
     # Eliminamos la hoja 'EmptySheet' creada inicialmente
     if rewrite:
@@ -50,7 +56,7 @@ class ImportarExportarDatos():
         book.save(self.ruta_archivo)
 
     # Aplicar configuraciones adicionales si están definidas
-    if col_fecha or width_col or align_col:
+    if ruta_formato_plantilla:
       book = load_workbook(self.ruta_archivo)
       if col_fecha:
         config_fecha(book, col_fecha)

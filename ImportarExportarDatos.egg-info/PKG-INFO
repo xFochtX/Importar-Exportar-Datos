@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: ImportarExportarDatos
+Version: 0.1.2
+Summary: Un paquete para importar y exportar datos en Excel y pickle
+Home-page: https://github.com/xFochtX/Importar-Exportar-Datos.git
+Author: Focht
+Author-email: fabian.chipana@unmsm.edu.pe
+Requires-Dist: pandas
+Requires-Dist: openpyxl
+Dynamic: author
+Dynamic: author-email
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: summary

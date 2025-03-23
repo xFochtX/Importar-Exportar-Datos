@@ -43,3 +43,48 @@ def config_align_col(book, align_col):
         alignment = Alignment(horizontal=align_col[col_name], vertical='center')
         for cell in sheet[get_column_letter(idx)]:
           cell.alignment = alignment
+
+
+def copiar_formato(ws, fila_origen, fila_destino):
+  """Copia el formato de una fila origen a otra fila destino."""
+  for col in range(1, ws.max_column + 1):
+    celda_origen = ws.cell(row=fila_origen, column=col)
+    celda_destino = ws.cell(row=fila_destino, column=col)
+
+    # Copiar formato
+    if celda_origen.has_style:
+      celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
+
+def exportar_con_plantilla(resumen_total, ruta_plantilla, ruta_archivo, hoja_destino):
+  # Cargar la plantilla
+  wb = load_workbook(ruta_plantilla)
+  ws = wb['Plantilla']
+
+  # Obtener el nombre de la tabla
+  table = ws.tables[list(ws.tables.keys())[0]]
+
+  # Determinar la fila inicial de los datos (después del encabezado)
+  inicio_fila = 2  # Suponiendo que los encabezados están en la fila 1
+  filas_existentes = ws.max_row - inicio_fila + 1
+
+  # Limpiar datos previos (manteniendo encabezados)
+  for row in ws.iter_rows(min_row=inicio_fila, max_row=ws.max_row, max_col=ws.max_column):
+    for cell in row:
+      cell.value = None
+
+  # Insertar nuevos datos dentro de la tabla
+  for row_idx, row in enumerate(resumen_total.itertuples(index=False), start=inicio_fila):
+    for col_idx, value in enumerate(row, start=1):
+      ws.cell(row=row_idx, column=col_idx, value=value)
+
+    # Copiar formato de la primera fila de datos
+    if row_idx > inicio_fila:
+      copiar_formato(ws, inicio_fila, row_idx)
+
+  # Actualizar la tabla para incluir las nuevas filas
+  ultima_fila = inicio_fila + len(resumen_total) - 1
+  table.ref = f"A1:{chr(64 + ws.max_column)}{ultima_fila}"  # Ajustar el rango de la tabla
+
+  # Guardar el archivo con los nuevos datos
+  wb.save(ruta_archivo)
+  print(f"✅ Archivo exportado correctamente en: {ruta_archivo}")
