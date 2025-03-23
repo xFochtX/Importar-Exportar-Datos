@@ -57,16 +57,3 @@ class ImportarExportarDatos():
         del book['EmptySheet']
         book.save(self.ruta_archivo)
 
-    # Aplicar configuraciones adicionales si están definidas
-    if ruta_formato_plantilla:
-      book = load_workbook(self.ruta_archivo)
-      if col_fecha:
-        config_fecha(book, col_fecha)
-      if width_col:
-        config_width_col(book, width_col)
-      if align_col:
-        config_align_col(book, align_col)
-      book.save(self.ruta_archivo)
-
-
-
