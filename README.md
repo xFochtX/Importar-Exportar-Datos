@@ -2,7 +2,8 @@
 
 ## Descripción
 **ImportarExportarDatos** es un paquete de Python que facilita la importación y exportación de datos en formatos Excel y Pickle.  
-Incluye funciones para configurar formatos en archivos Excel como fechas, anchos de columna y alineación.
+El paquete está estructurado en módulos orientados a objetos para una mayor flexibilidad y mantenibilidad.  
+Incluye funciones para exportar con formatos predefinidos (fechas, anchos de columna, alineación) usando plantillas Excel.
 
 ## Instalación
 
@@ -10,7 +11,6 @@ Incluye funciones para configurar formatos en archivos Excel como fechas, anchos
 Si tienes el repositorio clonado en tu equipo, navega a la carpeta del proyecto y ejecuta:
 ```bash
 pip install -e .
-```
 
 ### Instalación desde GitHub
 Si el paquete está en GitHub, puedes instalarlo directamente con:
@@ -22,19 +22,18 @@ pip install git+https://github.com/usuario/ImportarExportarDatos.git --upgrade
 
 ### Importar el paquete en tu código
 ```python
-from importar_exportar import ImportarExportarDatos, exportar_excel
+from importar_exportar import Importador, Exportador
 ```
 
-### Uso de la clase
+### Uso por separado (Importador y Exportador)
 ```python
-ie = ImportarExportarDatos("datos", "archivo.xlsx")
-df = ie.importar_excel()
-ie.exportar_excel(df, sheet_name="Hoja1")
-```
+from importar_exportar import Importador, Exportador
 
-### Uso de la función directa
-```python
-exportar_excel("datos", "archivo.xlsx", df, sheet_name="Hoja1")
+importador = Importador("datos", "archivo.xlsx")
+df = importador.excel()
+
+exportador = Exportador("datos", "archivo.xlsx")
+exportador.excel(df, sheet_name="Hoja1")
 ```
 
 ## Requisitos
