@@ -15,7 +15,7 @@ pip install -e .
 ### Instalación desde GitHub
 Si el paquete está en GitHub, puedes instalarlo directamente con:
 ```bash
-pip install git+https://github.com/usuario/ImportarExportarDatos.git --upgrade
+pip install git+https://github.com/xFochtX/Importar-Exportar-Datos --upgrade
 ```
 
 ## Uso
