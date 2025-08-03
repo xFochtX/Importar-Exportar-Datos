@@ -10,7 +10,7 @@ class Exportador(ArchivoBase):
     with open(self.ruta_archivo, "wb") as archivo:
       pickle.dump(objeto, archivo)
 
-  def excel(self, df, sheet_name, rewrite=False, ruta_formato_plantilla=None, **kwargs):
+  def excel(self, dataframe, sheet_name, rewrite=False, ruta_formato_plantilla=None, **kwargs):
     crear_carpeta_si_no_existe(self.carpeta)
 
     if rewrite and not self.ruta_archivo.exists():
@@ -20,10 +20,10 @@ class Exportador(ArchivoBase):
     options = {"mode": "a", "if_sheet_exists": "replace"} if rewrite else {"mode": "w"}
 
     if ruta_formato_plantilla:
-      exportar_con_plantilla(df, ruta_formato_plantilla, self.ruta_archivo, sheet_name)
+      exportar_con_plantilla(dataframe, ruta_formato_plantilla, self.ruta_archivo, sheet_name)
     else:
       with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
-        df.to_excel(writer, sheet_name=sheet_name, **kwargs)
+        dataframe.to_excel(writer, sheet_name=sheet_name, **kwargs)
 
     if rewrite:
       eliminar_hoja(self.ruta_archivo, 'EmptySheet')

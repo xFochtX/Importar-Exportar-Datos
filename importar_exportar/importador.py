@@ -9,3 +9,6 @@ class Importador(ArchivoBase):
 
   def excel(self, **kwargs):
     return pd.read_excel(self.ruta_archivo, **kwargs)
+
+  def csv(self,**kwargs):
+    return pd.read_csv(self.ruta_archivo, **kwargs)
