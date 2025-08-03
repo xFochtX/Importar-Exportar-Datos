@@ -23,7 +23,7 @@ class Importador(ArchivoBase):
     type : str
         'table' para tablas,
         'text' para texto plano,
-        'pdf' para retornar directamente las páginas sin procesar.
+        'page' para retornar directamente las páginas sin procesar.
     n_pages : 'all' o list of int
         'all' para procesar todo el PDF, o lista de páginas (base 1).
     table_settings : dict, opcional
@@ -31,28 +31,38 @@ class Importador(ArchivoBase):
 
     Retorna
     -------
-    list
-        - Si type='table': lista de DataFrames.
-        - Si type='text' : lista de strings (uno por página).
-        - Si type='page'  : lista de objetos Page (pdfplumber).
+    Tuple (number_pages, information)
+    - number_pages: lista de enteros (número de página base 1)
+    Si type='page':
+      - information: lista de objetos Page (pdfplumber)
+    Si type='table':
+      - information: lista de DataFrames
+    Si type='text':
+      - information: lista de strings, uno por cada página
     """
+    number_pages = []
     information = []
 
+
     with pdfplumber.open(self.ruta_archivo) as pdf:
-      pages = pdf.pages if n_pages == 'all' else [pdf.pages[p] for p in n_pages]
+      pages = pdf.pages if n_pages == 'all' else [pdf.pages[p - 1] for p in n_pages]  # base 1
 
       for page in pages:
+        page_number = page.page_number  # pdfplumber uses base-1 internally
         if type == 'page':
+          number_pages.append(page_number)
           information.append(page)
         elif type == 'table':
           extracted = page.extract_tables(table_settings=table_settings)
           for tabla in extracted:
             df = pd.DataFrame(tabla[1:], columns=tabla[0])
+            number_pages.append(page_number)
             information.append(df)
         elif type == 'text':
           text = page.extract_text()
+          number_pages.append(page_number)
           information.append(text)
         else:
           raise ValueError("El parámetro 'type' debe ser 'page', 'table' o 'text'.")
 
-    return information
+    return number_pages, information
