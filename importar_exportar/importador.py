@@ -30,7 +30,7 @@ class Importador(ArchivoBase):
     information = []
 
     with pdfplumber.open(self.ruta_archivo) as pdf:
-      pages = pdf.pages if n_pages == 'all' else [pdf.pages[p - 1] for p in n_pages]
+      pages = pdf.pages if n_pages == 'all' else [pdf.pages[p] for p in n_pages]
 
       for page in pages:
         if type == 'table':
