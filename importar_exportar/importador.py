@@ -3,7 +3,7 @@ import pickle
 import pdfplumber
 from .base import ArchivoBase
 
-class Importador(ArchivoBase):
+class Importar(ArchivoBase):
   def pickle(self):
     with open(self.ruta_archivo, "rb") as archivo:
       return pickle.load(archivo)

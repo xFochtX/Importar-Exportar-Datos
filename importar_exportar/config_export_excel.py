@@ -46,7 +46,7 @@ def config_align_col(book, align_col):
           cell.alignment = alignment
 
 
-def copiar_formato(ws, fila_origen, fila_destino):
+def copy_format(ws, fila_origen, fila_destino):
   """Copia el formato de una fila origen a otra fila destino."""
   for col in range(1, ws.max_column + 1):
     celda_origen = ws.cell(row=fila_origen, column=col)
@@ -56,7 +56,7 @@ def copiar_formato(ws, fila_origen, fila_destino):
     if celda_origen.has_style:
       celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
 
-def exportar_con_plantilla(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja):
+def export_with_template(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja):
   # Cargar la plantilla
   wb = load_workbook(ruta_plantilla)
   ws = wb[wb.sheetnames[0]] # Obtener la única hoja de la plantilla
@@ -80,7 +80,7 @@ def exportar_con_plantilla(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja)
 
     # Copiar formato de la primera fila de datos
     if row_idx > inicio_fila:
-      copiar_formato(ws, inicio_fila, row_idx)
+      copy_format(ws, inicio_fila, row_idx)
 
   # Actualizar la tabla para incluir las nuevas filas
   ultima_fila = inicio_fila + len(dataframe) - 1

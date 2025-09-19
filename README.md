@@ -1,46 +1,76 @@
 # ImportarExportarDatos
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/Version-1.5.0-orange)
+
 ## Descripción
-**ImportarExportarDatos** es un paquete de Python que facilita la importación y exportación de datos en formatos Excel y Pickle.  
-El paquete está estructurado en módulos orientados a objetos para una mayor flexibilidad y mantenibilidad.  
+
+**ImportarExportarDatos** es un paquete de Python que facilita la importación y exportación de datos en formatos **Excel**, **CSV**, **Pickle**, **PDF** y formatos geoespaciales.  
+Está estructurado en módulos orientados a objetos para mayor flexibilidad y mantenibilidad.  
 Incluye funciones para exportar con formatos predefinidos (fechas, anchos de columna, alineación) usando plantillas Excel.
 
 ## Instalación
 
 ### Instalación local desde el repositorio
-Si tienes el repositorio clonado en tu equipo, navega a la carpeta del proyecto y ejecuta:
+
 ```bash
 pip install -e .
+```
 
 ### Instalación desde GitHub
-Si el paquete está en GitHub, puedes instalarlo directamente con:
+
 ```bash
 pip install git+https://github.com/xFochtX/Importar-Exportar-Datos --upgrade
 ```
 
+> **Nota:**  
+> Si necesitas trabajar con datos geoespaciales, instala manualmente la librería `osgeo` siguiendo la [documentación oficial](https://pypi.org/project/GDAL/).
+
+## Requisitos
+
+- Python 3.10+
+- pandas
+- openpyxl
+- pdfplumber
+- geopandas
+- (Opcional) osgeo
+
 ## Uso
 
 ### Importar el paquete en tu código
+
 ```python
 from importar_exportar import Importador, Exportador
 ```
 
-### Uso por separado (Importador y Exportador)
+### Ejemplo de uso
+
 ```python
 from importar_exportar import Importador, Exportador
 
+# Importar datos desde Excel
 importador = Importador("datos", "archivo.xlsx")
 df = importador.excel()
 
+# Exportar datos a Excel
 exportador = Exportador("datos", "archivo.xlsx")
 exportador.excel(df, sheet_name="Hoja1")
 ```
 
-## Requisitos
-- Python 3.7+
-- pandas
-- openpyxl
+## Funcionalidades
 
-## Autores
-- Focht
+- Importar y exportar datos en Excel, CSV, Pickle, PDF y formatos geoespaciales.
+- Personalización de formatos en exportación (fechas, alineación, anchos de columna).
+- Uso de plantillas Excel para exportación avanzada.
+- Soporte para procesamiento de datos tabulares y espaciales.
 
+## Contribuciones
+
+¿Te gustaría mejorar este paquete?  
+¡Las contribuciones son bienvenidas! Por favor, abre un issue o envía un pull request.
+
+## Autor
+
+- **Focht**  
+  [fabian.chipana@unmsm.edu.pe](mailto:fabian.chipana@unmsm.edu.pe)

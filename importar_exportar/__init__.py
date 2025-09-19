@@ -1,6 +1,6 @@
 # importar_exportar/__init__.py
 
-from .importador import Importador
-from .exportador import Exportador
+from .importador import Importar
+from .exportador import Exportar
 
-__all__ = ["Importador", "Exportador"]
+__all__ = ["Importar", "Exportar"]
