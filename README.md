@@ -41,20 +41,20 @@ pip install git+https://github.com/xFochtX/Importar-Exportar-Datos --upgrade
 ### Importar el paquete en tu código
 
 ```python
-from importar_exportar import Importador, Exportador
+from importar_exportar import Importar, Exportar
 ```
 
 ### Ejemplo de uso
 
 ```python
-from importar_exportar import Importador, Exportador
+from importar_exportar import Importar, Exportar
 
 # Importar datos desde Excel
-importador = Importador("datos", "archivo.xlsx")
+importador = Importar("datos", "archivo.xlsx")
 df = importador.excel()
 
 # Exportar datos a Excel
-exportador = Exportador("datos", "archivo.xlsx")
+exportador = Exportar("datos", "archivo.xlsx")
 exportador.excel(df, sheet_name="Hoja1")
 ```
 

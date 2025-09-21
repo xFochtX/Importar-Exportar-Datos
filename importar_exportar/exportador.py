@@ -11,7 +11,7 @@ class Exportar(ArchivoBase):
     with open(self.ruta_archivo, "wb") as archivo:
       pickle.dump(objeto, archivo)
 
-  def excel(self, dataframe, sheet_name, rewrite=False, path_template=None, **kwargs):
+  def excel(self, dataframe, sheet_name='Hoja1', rewrite=False, path_template=None, index=False, **kwargs):
     ensure_folder(self.carpeta)
 
     if rewrite and not self.ruta_archivo.exists():
@@ -24,7 +24,7 @@ class Exportar(ArchivoBase):
       export_with_template(dataframe, path_template, self.ruta_archivo, sheet_name)
     else:
       with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
-        dataframe.to_excel(writer, sheet_name=sheet_name, index=False, **kwargs)
+        dataframe.to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
 
     if rewrite:
       delete_sheet(self.ruta_archivo, 'EmptySheet')
