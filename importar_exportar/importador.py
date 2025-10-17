@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle
 import pdfplumber
+import chardet
 from .base import ArchivoBase
 
 class Importar(ArchivoBase):
@@ -12,7 +13,15 @@ class Importar(ArchivoBase):
     return pd.read_excel(self.ruta_archivo, **kwargs)
 
   def csv(self,**kwargs):
+    # ✅ Solo detectar encoding si el usuario no lo proporciona
+    if 'encoding' not in kwargs:
+      with open(self.ruta_archivo, 'rb') as f:
+        result = chardet.detect(f.read(50000))
+        encoding_detected = result['encoding'] or 'utf-8'
+      kwargs['encoding'] = encoding_detected
+    # 📥 Leer el archivo CSV con el encoding correspondiente
     return pd.read_csv(self.ruta_archivo, **kwargs)
+
 
   def pdf(self, type='table', n_pages='all', table_settings=None):
     """
