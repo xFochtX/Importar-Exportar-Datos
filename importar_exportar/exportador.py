@@ -2,7 +2,8 @@ import pandas as pd
 import pickle
 from osgeo import ogr
 from .base import ArchivoBase
-from .helpers import ensure_folder, delete_sheet
+from .helpers import ensure_folder
+from openpyxl import load_workbook
 from .config_export_excel import export_with_template
 
 class Exportar(ArchivoBase):
@@ -27,7 +28,7 @@ class Exportar(ArchivoBase):
                           if_sheet_exists='replace' if _append else None) as writer:
         dataframe.to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
 
-  def excel_with_sheets(self, dataframes_dict, index=False, path_template=None, **kwargs):
+  def excel_multi_sheets(self, dataframes_dict, index=False, path_template=None, **kwargs):
     """
     Exporta varios DataFrames a un mismo Excel (sobrescribe desde cero).
     """
@@ -36,7 +37,14 @@ class Exportar(ArchivoBase):
     if self.ruta_archivo.exists():
       self.ruta_archivo.unlink()
 
-    for i, (sheet_name, df) in enumerate(dataframes_dict.items()):
+    # --- Ordenar internamente por tamaño (de menor a mayor) para optimizar rendimiento ---
+    sorted_items = sorted(
+        dataframes_dict.items(),
+        key=lambda item: len(item[1]) if hasattr(item[1], "__len__") else float("inf")
+    )
+
+    # --- Exportar excel con múltiples hojas ---
+    for i, (sheet_name, df) in enumerate(sorted_items):
       self.excel(
         dataframe=df,
         sheet_name=sheet_name,
@@ -45,7 +53,16 @@ class Exportar(ArchivoBase):
         _append=(i > 0),   # Agrega las siguientes hojas
         **kwargs
       )
-  
+
+    # --- 3️⃣ Reordenar hojas al orden original del diccionario ---
+    wb = load_workbook(self.ruta_archivo)
+    original_order = list(dataframes_dict.keys())
+
+    wb._sheets.sort(key=lambda ws: original_order.index(ws.title))
+    wb.save(self.ruta_archivo)
+    wb.close()
+
+
   def shapefile(self, gdf, columnas_hiperenlace=None):
     """
     Exporta el GeoDataFrame como Shapefile, permitiendo especificar una o varias columnas
