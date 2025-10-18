@@ -4,8 +4,7 @@ import time
 from datetime import datetime
 from osgeo import ogr
 from .base import ArchivoBase
-from .helpers import ensure_folder
-from openpyxl import load_workbook
+from .helpers import ensure_folder, reorder_sheets
 from .config_export_excel import export_with_template
 
 class Exportar(ArchivoBase):
@@ -70,13 +69,7 @@ class Exportar(ArchivoBase):
     # --- Reordenar hojas al orden original del diccionario ---
     start_reorder = datetime.now()
     print(f"[{start_reorder.strftime('%H:%M:%S')}] Iniciando reordenamiento de hojas...")
-
-    wb = load_workbook(self.ruta_archivo)
-    original_order = list(dataframes_dict.keys())
-
-    wb._sheets.sort(key=lambda ws: original_order.index(ws.title))
-    wb.save(self.ruta_archivo)
-    wb.close()
+    reorder_sheets(self.ruta_archivo, list(dataframes_dict.keys()))
 
     end_reorder = datetime.now()
     elapsed_reorder = (end_reorder - start_reorder).total_seconds()
