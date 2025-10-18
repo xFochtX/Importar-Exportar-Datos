@@ -7,9 +7,9 @@ setup(
     install_requires=[
         "pandas",
         "openpyxl",
+        "chardet",
         "pdfplumber",
-        "geopandas",
-        "chardet"
+        "geopandas"
     ],
     author="Focht",
     author_email="fabian.chipana@unmsm.edu.pe",

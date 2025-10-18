@@ -1,5 +1,7 @@
 import pandas as pd
 import pickle
+import time
+from datetime import datetime
 from osgeo import ogr
 from .base import ArchivoBase
 from .helpers import ensure_folder
@@ -30,38 +32,55 @@ class Exportar(ArchivoBase):
 
   def excel_multi_sheets(self, dataframes_dict, index=False, path_template=None, **kwargs):
     """
-    Exporta varios DataFrames a un mismo Excel (sobrescribe desde cero).
+    Exporta varios DataFrames a un mismo Excel (sobrescribe desde cero),
+    midiendo los tiempos de ejecución y mostrando información detallada.
     """
     ensure_folder(self.carpeta)
+
+    start_time = time.time()
+    start_dt = datetime.now().strftime("%H:%M:%S")
+    print(f"\n🕒 [Inicio] Exportación de múltiples hojas iniciada a las {start_dt}")
 
     if self.ruta_archivo.exists():
       self.ruta_archivo.unlink()
 
-    # --- Ordenar internamente por tamaño (de menor a mayor) para optimizar rendimiento ---
+    # --- Ordenar internamente por tamaño (de menor a mayor) ---
     sorted_items = sorted(
-        dataframes_dict.items(),
-        key=lambda item: len(item[1]) if hasattr(item[1], "__len__") else float("inf")
+      dataframes_dict.items(),
+      key=lambda item: len(item[1]) if hasattr(item[1], "__len__") else float("inf")
     )
 
     # --- Exportar excel con múltiples hojas ---
     for i, (sheet_name, df) in enumerate(sorted_items):
+      sheet_start = time.time()
+      print(f"  ➜ Exportando hoja '{sheet_name}' ({len(df)} filas)... ", end="", flush=True)
+
       self.excel(
         dataframe=df,
         sheet_name=sheet_name,
         path_template=path_template,
         index=index,
-        _append=(i > 0),   # Agrega las siguientes hojas
+        _append=(i > 0),
         **kwargs
       )
 
-    # --- 3️⃣ Reordenar hojas al orden original del diccionario ---
+      sheet_end = time.time()
+      print(f"✔️  {sheet_end - sheet_start:.2f} segundos")
+
+    # --- Reordenar hojas al orden original del diccionario ---
     wb = load_workbook(self.ruta_archivo)
     original_order = list(dataframes_dict.keys())
-
     wb._sheets.sort(key=lambda ws: original_order.index(ws.title))
     wb.save(self.ruta_archivo)
     wb.close()
 
+    # --- Mostrar tiempo total ---
+    end_time = time.time()
+    duration = end_time - start_time
+    end_dt = datetime.now().strftime("%H:%M:%S")
+
+    print(f"✅ [Fin] Exportación completada a las {end_dt}")
+    print(f"⏱️  Duración total: {duration:.2f} segundos\n")
 
   def shapefile(self, gdf, columnas_hiperenlace=None):
     """

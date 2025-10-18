@@ -32,6 +32,7 @@ pip install git+https://github.com/xFochtX/Importar-Exportar-Datos --upgrade
 - Python 3.10+
 - pandas
 - openpyxl
+- chardet
 - pdfplumber
 - geopandas
 - (Opcional) osgeo
