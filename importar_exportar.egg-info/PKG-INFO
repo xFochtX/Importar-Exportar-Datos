@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: ImportarExportarDatos
+Name: importar_exportar
 Version: 2.2.0
 Summary: Librería para importar y exportar datos en Excel, CSV, Pickle, PDF y formatos geoespaciales.
 Home-page: https://github.com/xFochtX/Importar-Exportar-Datos.git

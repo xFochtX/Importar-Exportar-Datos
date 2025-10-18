@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="ImportarExportarDatos",
-    version="2.1.0",
+    name="importar_exportar",
+    version="2.2.0",
     packages=find_packages(),
     install_requires=[
         "pandas",

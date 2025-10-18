@@ -11,23 +11,40 @@ class Exportar(ArchivoBase):
     with open(self.ruta_archivo, "wb") as archivo:
       pickle.dump(objeto, archivo)
 
-  def excel(self, dataframe, sheet_name='Hoja1', rewrite=False, path_template=None, index=False, **kwargs):
+  def excel(self, dataframe, sheet_name='Hoja1', path_template=None, index=False, _append=False, **kwargs):
+    """
+    Exporta un DataFrame a Excel.
+    Si _append=True, se agrega al archivo existente (solo uso interno).
+    """
     ensure_folder(self.carpeta)
 
-    if rewrite and not self.ruta_archivo.exists():
-      with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode='w') as writer:
-        pd.DataFrame().to_excel(writer, sheet_name='EmptySheet')
-
-    options = {"mode": "a", "if_sheet_exists": "replace"} if rewrite else {"mode": "w"}
+    mode = 'a' if _append else 'w'
 
     if path_template:
       export_with_template(dataframe, path_template, self.ruta_archivo, sheet_name)
     else:
-      with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', **options) as writer:
+      with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode=mode,
+                          if_sheet_exists='replace' if _append else None) as writer:
         dataframe.to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
 
-    if rewrite:
-      delete_sheet(self.ruta_archivo, 'EmptySheet')
+  def excel_with_sheets(self, dataframes_dict, index=False, path_template=None, **kwargs):
+    """
+    Exporta varios DataFrames a un mismo Excel (sobrescribe desde cero).
+    """
+    ensure_folder(self.carpeta)
+
+    if self.ruta_archivo.exists():
+      self.ruta_archivo.unlink()
+
+    for i, (sheet_name, df) in enumerate(dataframes_dict.items()):
+      self.excel(
+        dataframe=df,
+        sheet_name=sheet_name,
+        path_template=path_template,
+        index=index,
+        _append=(i > 0),   # Agrega las siguientes hojas
+        **kwargs
+      )
   
   def shapefile(self, gdf, columnas_hiperenlace=None):
     """
