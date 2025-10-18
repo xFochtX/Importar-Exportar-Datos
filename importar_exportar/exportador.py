@@ -68,11 +68,19 @@ class Exportar(ArchivoBase):
       print(f"✔️  {sheet_end - sheet_start:.2f} segundos")
 
     # --- Reordenar hojas al orden original del diccionario ---
+    start_reorder = datetime.now()
+    print(f"[{start_reorder.strftime('%H:%M:%S')}] Iniciando reordenamiento de hojas...")
+
     wb = load_workbook(self.ruta_archivo)
     original_order = list(dataframes_dict.keys())
+
     wb._sheets.sort(key=lambda ws: original_order.index(ws.title))
     wb.save(self.ruta_archivo)
     wb.close()
+
+    end_reorder = datetime.now()
+    elapsed_reorder = (end_reorder - start_reorder).total_seconds()
+    print(f"[{end_reorder.strftime('%H:%M:%S')}] Reordenamiento completado ({elapsed_reorder:.2f} segundos)")
 
     # --- Mostrar tiempo total ---
     end_time = time.time()
