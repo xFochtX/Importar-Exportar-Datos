@@ -1,7 +1,9 @@
 from pathlib import Path
 from openpyxl import load_workbook
 import zipfile
-import xml.etree.ElementTree as ET
+import tempfile
+import shutil
+from xml.etree import ElementTree as ET
 
 def ensure_folder(carpeta: Path):
   carpeta.mkdir(parents=True, exist_ok=True)
@@ -12,37 +14,35 @@ def delete_sheet(ruta_archivo, nombre_hoja):
     del libro[nombre_hoja]
     libro.save(ruta_archivo)
 
-
-def reorder_sheets(file_path, desired_order):
+def reorder_sheets(path_xlsx, sheet_order):
   """
-  Reordena las hojas de un archivo Excel (.xlsx) según el orden especificado.
-  Mantiene la estructura sin necesidad de abrir con openpyxl.
+  Reordena las hojas de un archivo Excel (.xlsx) según el orden dado en sheet_order.
+  El proceso es rápido y no depende de openpyxl.
   """
-  # Namespace principal del XML de Excel
-  ns = {'main': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+  # Crear un archivo temporal
+  temp_path = tempfile.mktemp(suffix=".xlsx")
 
-  with zipfile.ZipFile(file_path, 'a') as z:
-    # Extraer el contenido del workbook.xml
-    workbook_xml = 'xl/workbook.xml'
-    xml_content = z.read(workbook_xml)
-    root = ET.fromstring(xml_content)
+  with zipfile.ZipFile(path_xlsx, 'r') as zin:
+    with zipfile.ZipFile(temp_path, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
+      for item in zin.infolist():
+        data = zin.read(item.filename)
 
-    # Buscar las hojas dentro del XML
-    sheets = root.find('main:sheets', ns)
-    if sheets is None:
-      raise ValueError("No se encontró el nodo <sheets> en workbook.xml")
+        # Solo modificar el archivo xl/workbook.xml
+        if item.filename == "xl/workbook.xml":
+          root = ET.fromstring(data)
+          ns = {'main': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+          sheets = root.find('main:sheets', ns)
+          if sheets is not None:
+            # Crear un diccionario de las hojas existentes
+            sheet_elements = {s.get('name'): s for s in sheets.findall('main:sheet', ns)}
+            sheets.clear()  # limpiar todas
+            # Reinsertar en el orden deseado
+            for name in sheet_order:
+              if name in sheet_elements:
+                sheets.append(sheet_elements[name])
+            data = ET.tostring(root, encoding='utf-8', xml_declaration=True)
 
-    # Convertir las hojas a lista editable
-    sheet_elements = list(sheets)
+        zout.writestr(item, data)
 
-    # Crear un diccionario: {nombre_hoja: elemento_xml}
-    sheet_dict = {s.attrib['name']: s for s in sheet_elements}
-
-    # Reconstruir las hojas según el orden deseado
-    sheets[:] = [sheet_dict[name] for name in desired_order if name in sheet_dict]
-
-    # Convertir el XML nuevamente a bytes
-    new_xml_content = ET.tostring(root, encoding='utf-8', xml_declaration=True)
-
-    # Sobrescribir workbook.xml dentro del ZIP (Excel)
-    z.writestr(workbook_xml, new_xml_content)
+  # Reemplazar el original
+  shutil.move(temp_path, path_xlsx)

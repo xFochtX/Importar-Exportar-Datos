@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: importar_exportar
-Version: 2.2.0
+Version: 2.2.5
 Summary: Librería para importar y exportar datos en Excel, CSV, Pickle, PDF y formatos geoespaciales.
 Home-page: https://github.com/xFochtX/Importar-Exportar-Datos.git
 Author: Focht
@@ -12,6 +12,7 @@ Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: pandas
 Requires-Dist: openpyxl
+Requires-Dist: chardet
 Requires-Dist: pdfplumber
 Requires-Dist: geopandas
 Dynamic: author
@@ -58,6 +59,7 @@ pip install git+https://github.com/xFochtX/Importar-Exportar-Datos --upgrade
 - Python 3.10+
 - pandas
 - openpyxl
+- chardet
 - pdfplumber
 - geopandas
 - (Opcional) osgeo
