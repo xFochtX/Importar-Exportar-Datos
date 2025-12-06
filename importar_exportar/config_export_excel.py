@@ -57,38 +57,32 @@ def copy_format(ws, fila_origen, fila_destino):
       celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
 
 def export_with_template(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja):
-  # Cargar la plantilla
   wb = load_workbook(ruta_plantilla)
-  ws = wb[wb.sheetnames[0]] # Obtener la única hoja de la plantilla
+  ws = wb[wb.sheetnames[0]]
 
-  # Obtener el nombre de la tabla
+  # Nombre de tabla
   table = ws.tables[list(ws.tables.keys())[0]]
 
-  # Determinar la fila inicial de los datos (después del encabezado)
-  inicio_fila = 2  # Suponiendo que los encabezados están en la fila 1
-  filas_existentes = ws.max_row - inicio_fila + 1
+  # Fila donde empiezan los datos
+  inicio_fila = 2
 
-  # Limpiar datos previos (manteniendo encabezados)
+  # 1) Limpiar solo valores, NO formateos
   for row in ws.iter_rows(min_row=inicio_fila, max_row=ws.max_row, max_col=ws.max_column):
     for cell in row:
       cell.value = None
 
-  # Insertar nuevos datos dentro de la tabla
-  for row_idx, row in enumerate(dataframe.itertuples(index=False), start=inicio_fila):
+  # 2) Convertir DataFrame a lista de listas (mucho más rápido)
+  data_as_list = dataframe.values.tolist()
+
+  # 3) Escribir data masivamente (sin copiar estilo por celda)
+  for row_idx, row in enumerate(data_as_list, start=inicio_fila):
     for col_idx, value in enumerate(row, start=1):
       ws.cell(row=row_idx, column=col_idx, value=value)
 
-    # Copiar formato de la primera fila de datos
-    if row_idx > inicio_fila:
-      copy_format(ws, inicio_fila, row_idx)
+  # 4) Actualizar rango de la tabla (Excel replicará estilos automáticamente)
+  ultima_fila = inicio_fila + len(data_as_list) - 1
+  last_col = get_column_letter(ws.max_column)
+  table.ref = f"A1:{last_col}{ultima_fila}"
 
-  # Actualizar la tabla para incluir las nuevas filas
-  ultima_fila = inicio_fila + len(dataframe) - 1
-  table.ref = f"A1:{chr(64 + ws.max_column)}{ultima_fila}"  # Ajustar el rango de la tabla
-
-  # Obtener la única hoja de la plantilla
   ws.title = nombre_hoja
-
-  # Guardar el archivo con los nuevos datos
   wb.save(ruta_archivo)
-
