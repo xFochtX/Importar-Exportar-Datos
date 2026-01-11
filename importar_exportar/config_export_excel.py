@@ -1,3 +1,4 @@
+from pathlib import Path
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 from openpyxl.styles import NamedStyle, Font
@@ -56,30 +57,40 @@ def copy_format(ws, fila_origen, fila_destino):
     if celda_origen.has_style:
       celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
 
-def export_with_template(dataframe, ruta_plantilla, ruta_archivo, nombre_hoja):
-  wb = load_workbook(ruta_plantilla)
-  ws = wb[wb.sheetnames[0]]
+def export_with_template(ruta_archivo, dataframe, nombre_hoja, ruta_plantilla, append=False):
+  # 1) Abrir workbook correcto (write/append)
+  if append and Path(ruta_archivo).exists():
+    wb = load_workbook(ruta_archivo)
+  else:
+    wb = load_workbook(ruta_plantilla)
 
-  # Nombre de tabla
+  # 2) Seleccionar hoja
+  if nombre_hoja in wb.sheetnames:
+    ws = wb[nombre_hoja]
+  else:
+    ws = wb[wb.sheetnames[0]]
+    print(f"⚠️  La hoja '{nombre_hoja}' no existe en la plantilla. Se usará la hoja '{ws.title}'")
+
+  # 3) Obtener tabla (se asume una tabla por hoja)
   table = ws.tables[list(ws.tables.keys())[0]]
 
-  # Fila donde empiezan los datos
+  # 4) Fila donde empiezan los datos
   inicio_fila = 2
 
-  # 1) Limpiar solo valores, NO formateos
+  # 5) Limpiar solo valores, (no formatos)
   for row in ws.iter_rows(min_row=inicio_fila, max_row=ws.max_row, max_col=ws.max_column):
     for cell in row:
       cell.value = None
 
-  # 2) Convertir DataFrame a lista de listas (mucho más rápido)
+  # 6) Convertir DataFrame a lista de listas (escritura mucho más rápida)
   data_as_list = dataframe.values.tolist()
 
-  # 3) Escribir data masivamente (sin copiar estilo por celda)
+  # 7) Escribir data masivamente (sin copiar estilo por celda)
   for row_idx, row in enumerate(data_as_list, start=inicio_fila):
     for col_idx, value in enumerate(row, start=1):
       ws.cell(row=row_idx, column=col_idx, value=value)
 
-  # 4) Actualizar rango de la tabla (Excel replicará estilos automáticamente)
+  # 8) Actualizar rango de la tabla (Excel replicará estilos automáticamente)
   ultima_fila = inicio_fila + len(data_as_list) - 1
   last_col = get_column_letter(ws.max_column)
   table.ref = f"A1:{last_col}{ultima_fila}"

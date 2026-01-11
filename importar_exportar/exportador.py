@@ -23,7 +23,7 @@ class Exportar(ArchivoBase):
     mode = 'a' if _append else 'w'
 
     if path_template:
-      export_with_template(dataframe, path_template, self.ruta_archivo, sheet_name)
+      export_with_template(self.ruta_archivo, dataframe, sheet_name, path_template, append=_append)
     else:
       with pd.ExcelWriter(self.ruta_archivo, engine='openpyxl', mode=mode,
                           if_sheet_exists='replace' if _append else None) as writer:
