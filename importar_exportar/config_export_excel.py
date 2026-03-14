@@ -46,16 +46,20 @@ def config_align_col(book, align_col):
         for cell in sheet[get_column_letter(idx)]:
           cell.alignment = alignment
 
+def copy_format(ws, fila_template, fila_inicio, fila_fin):
+  """Copia el number_format de la fila plantilla a todas las filas."""
 
-def copy_format(ws, fila_origen, fila_destino):
-  """Copia el formato de una fila origen a otra fila destino."""
-  for col in range(1, ws.max_column + 1):
-    celda_origen = ws.cell(row=fila_origen, column=col)
-    celda_destino = ws.cell(row=fila_destino, column=col)
+  # Guardar formatos de la fila plantilla (solo una vez)
+  formatos = [
+    ws.cell(row=fila_template, column=col).number_format
+    for col in range(1, ws.max_column + 1)
+  ]
 
-    # Copiar formato
-    if celda_origen.has_style:
-      celda_destino._style = celda_origen._style  # Copia el estilo de la celda origen
+  # Aplicarlos a todas las filas
+  for row in range(fila_inicio, fila_fin + 1):
+    for col, fmt in enumerate(formatos, start=1):
+      if fmt:
+        ws.cell(row=row, column=col).number_format = fmt
 
 def export_with_template(ruta_archivo, dataframe, nombre_hoja, ruta_plantilla, append=False):
   # 1) Abrir workbook correcto (write/append)
@@ -77,21 +81,23 @@ def export_with_template(ruta_archivo, dataframe, nombre_hoja, ruta_plantilla, a
   # 4) Fila donde empiezan los datos
   inicio_fila = 2
 
-  # 5) Limpiar solo valores, (no formatos)
-  for row in ws.iter_rows(min_row=inicio_fila, max_row=ws.max_row, max_col=ws.max_column):
-    for cell in row:
-      cell.value = None
+  # 5) Limpiar solo valores, (no formatos). Se optimizó para no borrar por celda, sino por fila
+  if ws.max_row > 1:
+    ws.delete_rows(2, ws.max_row)
 
   # 6) Convertir DataFrame a lista de listas (escritura mucho más rápida)
   data_as_list = dataframe.values.tolist()
 
-  # 7) Escribir data masivamente (sin copiar estilo por celda)
-  for row_idx, row in enumerate(data_as_list, start=inicio_fila):
-    for col_idx, value in enumerate(row, start=1):
-      ws.cell(row=row_idx, column=col_idx, value=value)
+  # 7) Escribir data masivamente (sin copiar estilo por celda). Se optimizó para no borrar por celda, sino por fila
+  for row in data_as_list:
+    ws.append(row)
 
   # 8) Actualizar rango de la tabla (Excel replicará estilos automáticamente)
   ultima_fila = inicio_fila + len(data_as_list) - 1
+
+  # copiar formatos de número
+  copy_format(ws, 2, inicio_fila, ultima_fila)
+
   last_col = get_column_letter(ws.max_column)
   table.ref = f"A1:{last_col}{ultima_fila}"
 
